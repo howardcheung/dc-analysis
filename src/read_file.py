@@ -55,6 +55,30 @@ def extract_name(content: bytes) -> bytes:
         return None
 
 
+def extract_year(content: bytes) -> int:
+    """
+        This function extracts the year of the server being tested and return
+        an int object. If it cannot find it, return a None object.
+
+        Inputs:
+        ==========
+        content: bytes
+            byte character obtained by reading a file
+    """
+
+    # define regular expression to be looked at
+    reg_exp = re.compile(b'Publication:.*\n')
+    reg_exp2 = re.compile(b'Publication:.*,')
+    # identify where it is
+    try:
+        statement = reg_exp.search(content).group()
+        return int(statement.replace(
+            reg_exp2.search(statement).group(), b''
+        ).replace(b'\n', b'').strip())  # remove all redundant characters
+    except AttributeError:
+        return None
+
+
 # testing functions
 if __name__ == '__main__':
 
@@ -64,5 +88,6 @@ if __name__ == '__main__':
     # extract name for index
     CONTENT = read_file('../data/power_ssj2008-20071128-00001.txt')
     assert extract_name(CONTENT) == b'PRIMERGY RX300 S3 (Intel Xeon L5335)'
+    assert extract_year(CONTENT) == 2007
 
     print('All functions in', os.path.basename(__file__), 'are ok')
