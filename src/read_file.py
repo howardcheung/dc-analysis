@@ -48,13 +48,15 @@ def extract_name(content: bytes) -> bytes:
     """
 
     # define regular expression to be looked at
-    reg_exp = re.compile(b'Set Description:.*Identical Nodes:', re.DOTALL)
+    reg_exp = re.compile(b'\n\n\n.*\nSPECpower_ssj2008 =', re.DOTALL)
     # identify where it is
     try:
         # remove all redundant characters
-        return b' '.join(reg_exp.search(content).group().replace(
-            b'Set Description:', b''
-        ).replace(b'\n', b'').replace(b'# of Identical Nodes:', b'').split())
+        return b' '.join(
+            reg_exp.search(content).group().replace(b'\n', b'').replace(
+                b'SPECpower_ssj2008 =', b''
+            ).split()
+        )
     except AttributeError:
         return None
 
@@ -164,8 +166,10 @@ if __name__ == '__main__':
 
     # extract name for index
     CONTENT = read_file('../data/power_ssj2008-20080612-00063.txt')
-    assert extract_name(CONTENT) == \
-        b'ProLiant DL120 G5 (2.83 GHz, Intel Xeon processor X3360)'
+    assert extract_name(CONTENT) == b''.join([
+        b'Hewlett-Packard Company ProLiant DL120 G5',
+        b' (2.83 GHz, Intel Xeon processor X3360)'
+    ])
 
     # extract year
     assert extract_year(CONTENT) == 2008
