@@ -103,6 +103,30 @@ def extract_form_factor(content: bytes) -> int:
         return float('nan')
 
 
+def extract_max_power(content: bytes) -> float:
+    """
+        This function extracts the maximum power consumption of the server
+        during the test and return it as a float object. If it cannot find
+        the power value, it returns a float('nan')
+
+        Inputs:
+        ==========
+        content: bytes
+            byte character obtained by reading a file
+    """
+
+    # define regular expression to be looked at
+    reg_exp = reg_exp = re.compile(b'100\%.*\|')
+    # identify where it is
+    try:
+        statement = reg_exp.search(content).group()
+        return float(statement[-10:-2])  # remove all redundant characters
+    except AtrributeError:
+        return float('nan')
+    except ValueError:
+        return float('nan')
+
+
 # testing functions
 if __name__ == '__main__':
 
@@ -120,5 +144,9 @@ if __name__ == '__main__':
     # extract form factor
     CONTENT2 = read_file('../data/power_ssj2008-20090811-00180.txt')
     assert extract_form_factor(CONTENT2) == 1
+
+    # extract maximum power
+    assert extract_max_power(CONTENT) == 136.0
+    assert extract_max_power(CONTENT2) == 178.0
 
     print('All functions in', os.path.basename(__file__), 'are ok')
