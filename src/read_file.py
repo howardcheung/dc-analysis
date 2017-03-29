@@ -83,7 +83,7 @@ def extract_year(content: bytes) -> int:
 def extract_form_factor(content: bytes) -> int:
     """
         This function extracts the form factor of the server being tested and
-        return an int object. If it cannot find it, return a None object.
+        return an int object. If it cannot find it, return a float('nan')
 
         Inputs:
         ==========
@@ -92,16 +92,15 @@ def extract_form_factor(content: bytes) -> int:
     """
 
     # define regular expression to be looked at
-    reg_exp = re.compile(b'Publication:.*\n')
-    reg_exp2 = re.compile(b'Publication:.*,')
+    reg_exp = re.compile(b'Form Factor:.*\n')
     # identify where it is
     try:
         statement = reg_exp.search(content).group()
         return int(statement.replace(
-            reg_exp2.search(statement).group(), b''
-        ).replace(b'\n', b'').strip())  # remove all redundant characters
+            b'Form Factor:', b''
+        ).replace(b'U', b'').strip())  # remove all redundant characters
     except AttributeError:
-        return None
+        return float('nan')
 
 
 # testing functions
@@ -114,6 +113,12 @@ if __name__ == '__main__':
     CONTENT = read_file('../data/power_ssj2008-20080612-00063.txt')
     assert extract_name(CONTENT) == \
         b'ProLiant DL120 G5 (2.83 GHz, Intel Xeon processor X3360)'
+
+    # extract year
     assert extract_year(CONTENT) == 2008
+
+    # extract form factor
+    CONTENT2 = read_file('../data/power_ssj2008-20090811-00180.txt')
+    assert extract_form_factor(CONTENT2) == 1
 
     print('All functions in', os.path.basename(__file__), 'are ok')
