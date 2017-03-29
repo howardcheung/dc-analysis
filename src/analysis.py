@@ -30,17 +30,31 @@ def summary_yr(datadf: pd.DataFrame) -> pd.DataFrame:
     """
 
     datadf.dropna(inplace=True)  # drop all na values
+
+    # adjust the values
+    datadf.loc[:, 'AdjIdlePower'] = datadf.loc[:, 'IdlePower'] /\
+        datadf.loc[:, 'FormFac']
+    datadf.loc[:, 'AdjMaxPower'] = datadf.loc[:, 'MaxPower'] /\
+        datadf.loc[:, 'FormFac']
+
+    # group the data
     grouped = datadf.groupby('Year')
-    idle_power_series = grouped['IdlePower'].mean()
-    max_power_series = grouped['MaxPower'].mean()
     summary_df = pd.concat([
-        grouped['IdlePower'].mean(), grouped['MaxPower'].mean(),
+        grouped['AdjIdlePower'].mean(), grouped['AdjMaxPower'].mean(),
         grouped['IdlePower'].count()
     ], axis=1)
     summary_df.loc['All', :] = [
-        datadf['IdlePower'].mean(), datadf['MaxPower'].mean(),
+        datadf['AdjIdlePower'].mean(), datadf['AdjMaxPower'].mean(),
         datadf['IdlePower'].count()
     ]
+    summary_df.columns = ['AdjIdlePower', 'AdjMaxPower', 'Count']
+
+    # calculate the required density values
+    summary_df.loc[:, 'IdlePowerDens'] = \
+        summary_df.loc[:, 'AdjIdlePower']*42.0/0.2703
+    summary_df.loc[:, 'MaxPowerDens'] = \
+        summary_df.loc[:, 'AdjMaxPower']*42.0/0.2703
+
     return summary_df
 
 # testing functions
@@ -53,7 +67,10 @@ if __name__ == '__main__':
     FINAL_DF = create_df(DATA_DIR, ext='txt')
     SUMMARY = summary_yr(FINAL_DF)
     print(SUMMARY)
-    assert SUMMARY.loc[2009, 'MaxPower'] > 0.0
-    assert SUMMARY.loc['All', 'MaxPower'] > 0.0
+    assert SUMMARY.loc[2009, 'MaxPowerDens'] > 0.0
+    assert SUMMARY.loc['All', 'MaxPowerDens'] > 0.0
+
+    # pass it to a file
+    SUMMARY.to_csv('./summary.csv', sep=';')
 
     print('All functions in', os.path.basename(__file__), 'are ok')
