@@ -116,12 +116,36 @@ def extract_max_power(content: bytes) -> float:
     """
 
     # define regular expression to be looked at
-    reg_exp = reg_exp = re.compile(b'100\%.*\|')
+    reg_exp = re.compile(b'100\%.*\|')
     # identify where it is
     try:
         statement = reg_exp.search(content).group()
         return float(statement[-10:-2])  # remove all redundant characters
-    except AtrributeError:
+    except AttributeError:
+        return float('nan')
+    except ValueError:
+        return float('nan')
+
+
+def extract_min_power(content: bytes) -> float:
+    """
+        This function extracts the minimum power consumption of the server
+        during the test and return it as a float object. If it cannot find
+        the power value, it returns a float('nan')
+
+        Inputs:
+        ==========
+        content: bytes
+            byte character obtained by reading a file
+    """
+
+    # define regular expression to be looked at
+    reg_exp = reg_exp = re.compile(b'Active Idle.*\|')
+    # identify where it is
+    try:
+        statement = reg_exp.search(content).group()
+        return float(statement[-10:-2])  # remove all redundant characters
+    except AttributeError:
         return float('nan')
     except ValueError:
         return float('nan')
@@ -148,5 +172,9 @@ if __name__ == '__main__':
     # extract maximum power
     assert extract_max_power(CONTENT) == 136.0
     assert extract_max_power(CONTENT2) == 178.0
+
+    # extract minimum power
+    assert extract_min_power(CONTENT) == 69.5
+    assert extract_min_power(CONTENT2) == 74.6
 
     print('All functions in', os.path.basename(__file__), 'are ok')
