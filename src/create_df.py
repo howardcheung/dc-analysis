@@ -68,11 +68,10 @@ if __name__ == '__main__':
         if os.path.isfile('/'.join([DATA_DIR, name]))
     ])
     FINAL_DF = create_df('../data/', ext='txt')
-    assert FINAL_DF.shape == (NUM_FILES, 5)
     print(FINAL_DF)
+    assert FINAL_DF.shape == (NUM_FILES, 5)
     assert set(FINAL_DF['Year']) == {
-        float('nan'), 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016
+        2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016
     }
-    assert set(FINAL_DF['FormFac']) == {float('nan'), 1, 2}
 
     print('All functions in', os.path.basename(__file__), 'are ok')
