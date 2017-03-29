@@ -2,6 +2,9 @@
 """
     This file contains scripts that helps to extract data from a file of
     SPEC 2008 data
+
+    Author: Howard Cheung
+    Date of creation: 2017/03/28
 """
 
 # import python internal modules

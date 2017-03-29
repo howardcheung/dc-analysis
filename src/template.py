@@ -1,5 +1,9 @@
 #!/usr/bin/python
 """
+    Template script for creation of python scripts
+
+    Author: Howard Cheung
+    Date of creation: 2017/03/28
 """
 
 # import python internal modules
