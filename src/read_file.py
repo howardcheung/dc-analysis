@@ -104,6 +104,8 @@ def extract_form_factor(content: bytes) -> int:
         ).replace(b'U', b'').strip())  # remove all redundant characters
     except AttributeError:
         return float('nan')
+    except ValueError:
+        return float('nan')
 
 
 def extract_max_power(content: bytes) -> float:

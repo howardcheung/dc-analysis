@@ -42,9 +42,10 @@ def create_df(datadir: str, ext: str='txt') -> pd.DataFrame:
 
     datalist = []
     for name in os.listdir(datadir):
-        if os.path.isfile(name) and ext in name[-len(ext):]:
+        filename = '/'.join([datadir, name])
+        if os.path.isfile(filename) and ext in name[-len(ext):]:
             row_data = []
-            content = read_file.read_file('/'.join([datadir, name]))
+            content = read_file.read_file(filename)
             row_data.append(read_file.extract_name(content))
             row_data.append(read_file.extract_year(content))
             row_data.append(read_file.extract_form_factor(content))
@@ -62,9 +63,16 @@ if __name__ == '__main__':
     # testing the main functions
     DATA_DIR = '../data/'
     NUM_FILES = len([
-        name for name in os.listdir(DATA_DIR) if os.path.isfile(name)
+        name
+        for name in os.listdir(DATA_DIR)
+        if os.path.isfile('/'.join([DATA_DIR, name]))
     ])
     FINAL_DF = create_df('../data/', ext='txt')
     assert FINAL_DF.shape == (NUM_FILES, 5)
+    print(FINAL_DF)
+    assert set(FINAL_DF['Year']) == {
+        float('nan'), 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016
+    }
+    assert set(FINAL_DF['FormFac']) == {float('nan'), 1, 2}
 
     print('All functions in', os.path.basename(__file__), 'are ok')
