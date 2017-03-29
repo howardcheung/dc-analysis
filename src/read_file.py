@@ -127,7 +127,8 @@ def extract_max_power(content: bytes) -> float:
     # identify where it is
     try:
         statement = reg_exp.search(content).group()
-        return float(statement[-10:-2])  # remove all redundant characters
+        # remove all redundant characters
+        return float(statement[-10:-2].replace(b',', b''))
     except AttributeError:
         return float('nan')
     except ValueError:
@@ -151,7 +152,8 @@ def extract_min_power(content: bytes) -> float:
     # identify where it is
     try:
         statement = reg_exp.search(content).group()
-        return float(statement[-10:-2])  # remove all redundant characters
+        # remove all redundant characters
+        return float(statement[-10:-2].replace(b',', b''))
     except AttributeError:
         return float('nan')
     except ValueError:
