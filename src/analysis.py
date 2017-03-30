@@ -51,9 +51,9 @@ def summary_yr(datadf: pd.DataFrame) -> pd.DataFrame:
 
     # calculate the required density values
     summary_df.loc[:, 'IdlePowerDens'] = \
-        summary_df.loc[:, 'AdjIdlePower']*42.0/0.2703
+        summary_df.loc[:, 'AdjIdlePower']*42.0/4.379*0.47
     summary_df.loc[:, 'MaxPowerDens'] = \
-        summary_df.loc[:, 'AdjMaxPower']*42.0/0.2703
+        summary_df.loc[:, 'AdjMaxPower']*42.0/4.379*0.47
 
     return summary_df
 

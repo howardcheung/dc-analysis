@@ -148,12 +148,37 @@ def extract_min_power(content: bytes) -> float:
     """
 
     # define regular expression to be looked at
-    reg_exp = reg_exp = re.compile(b'Active Idle.*\|')
+    reg_exp = re.compile(b'Active Idle.*\|')
     # identify where it is
     try:
         statement = reg_exp.search(content).group()
         # remove all redundant characters
         return float(statement[-10:-2].replace(b',', b''))
+    except AttributeError:
+        return float('nan')
+    except ValueError:
+        return float('nan')
+
+
+def extract_cpu_speed(content: bytes) -> float:
+    """
+        This function extracts the speed of the CPU inside the server and
+        returns it as an int object. If it cannot find one, it returns a
+        float('nan').
+
+        Inputs:
+        ==========
+        content: bytes
+            byte character obtained by reading a file
+    """
+
+    # define regular expression to be looked at
+    reg_exp = re.compile(b'CPU Frequency \(MHz\):.*')
+    # identify where it is
+    try:
+        statement = reg_exp.search(content).group()
+        # remove all redundant characters
+        return int(statement.replace(b'CPU Frequency (MHz):', b''))
     except AttributeError:
         return float('nan')
     except ValueError:
@@ -187,5 +212,9 @@ if __name__ == '__main__':
     # extract minimum power
     assert extract_min_power(CONTENT) == 69.5
     assert extract_min_power(CONTENT2) == 74.6
+
+    # extract cpu speed
+    assert extract_cpu_speed(CONTENT) == 2833
+    assert extract_cpu_speed(CONTENT2) == 1800
 
     print('All functions in', os.path.basename(__file__), 'are ok')
