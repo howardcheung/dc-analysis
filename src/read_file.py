@@ -185,6 +185,33 @@ def extract_cpu_speed(content: bytes) -> float:
         return float('nan')
 
 
+def extract_core_num(content: bytes) -> float:
+    """
+        This function extracts number of cores inside the server and
+        returns it as an int object. If it cannot find one, it returns a
+        float('nan').
+
+        Inputs:
+        ==========
+        content: bytes
+            byte character obtained by reading a file
+    """
+
+    # define regular expression to be looked at
+    reg_exp = re.compile(b'CPU\(s\) Enabled:.*cores,')
+    # identify where it is
+    try:
+        statement = reg_exp.search(content).group()
+        # remove all redundant characters
+        return int(statement.replace(b'CPU(s) Enabled:', b'').replace(
+            b'cores,', b''
+        ))
+    except AttributeError:
+        return float('nan')
+    except ValueError:
+        return float('nan')
+
+
 # testing functions
 if __name__ == '__main__':
 
@@ -216,5 +243,9 @@ if __name__ == '__main__':
     # extract cpu speed
     assert extract_cpu_speed(CONTENT) == 2833
     assert extract_cpu_speed(CONTENT2) == 1800
+
+    # extract number of cores
+    assert extract_core_num(CONTENT) == 4
+    assert extract_core_num(CONTENT2) == 12
 
     print('All functions in', os.path.basename(__file__), 'are ok')
