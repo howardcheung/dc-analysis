@@ -51,10 +51,13 @@ def create_df(datadir: str, ext: str='txt') -> pd.DataFrame:
             row_data.append(read_file.extract_form_factor(content))
             row_data.append(read_file.extract_max_power(content))
             row_data.append(read_file.extract_min_power(content))
+            row_data.append(read_file.extract_cpu_speed(content))
+            row_data.append(read_file.extract_core_num(content))
             datalist.append(row_data)
 
     return pd.DataFrame(data=datalist, columns=[
-        'Name', 'Year', 'FormFac', 'MaxPower', 'IdlePower'
+        'Name', 'Year', 'FormFac', 'MaxPower', 'IdlePower', 'CPU speed',
+        'NumCores'
     ])
 
 # testing functions
@@ -69,7 +72,7 @@ if __name__ == '__main__':
     ])
     FINAL_DF = create_df('../data/', ext='txt')
     print(FINAL_DF)
-    assert FINAL_DF.shape == (NUM_FILES, 5)
+    assert FINAL_DF.shape == (NUM_FILES, 7)
     assert set(FINAL_DF['Year']) == {
         2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016
     }
