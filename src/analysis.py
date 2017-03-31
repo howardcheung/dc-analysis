@@ -67,6 +67,39 @@ def summary_yr(datadf_ori: pd.DataFrame) -> pd.DataFrame:
 
     return summary_df
 
+
+
+def summary_yr_av(datadf: pd.DataFrame) -> pd.DataFrame:
+    """
+        This function summarizes the raw dataframe to create a new frame that
+        is grouped based on the year of the data without filtering the NaN
+        form factors.
+
+        Inputs:
+        datadf: pandas.DataFrame
+            pandas DataFrame calculated from create_df.create_df()
+    """
+
+    # adjust the values
+    datadf.loc[:, 'IdlePowerPortion'] = datadf.loc[:, 'IdlePower'] /\
+        datadf.loc[:, 'MaxPower']
+
+    # group the data
+    grouped = datadf.groupby('Year')
+    summary_df = pd.concat([
+        grouped['IdlePowerPortion'].count(), grouped['CPU speed'].mean(),
+        grouped['IdlePowerPortion'].mean(), grouped['IdlePowerPortion'].std()
+    ], axis=1)
+    summary_df.columns = [
+        'Count', 'AvCPUspd', 'IdlePowerPortion', 'IdlePowerPortion.std'
+    ]
+    summary_df.loc['All', :] = [
+        summary_df['Count'].sum(), datadf['CPU speed'].mean(),
+        datadf['IdlePowerPortion'].mean(), datadf['IdlePowerPortion'].std()
+    ]
+
+    return summary_df
+
 # testing functions
 if __name__ == '__main__':
 
@@ -76,11 +109,16 @@ if __name__ == '__main__':
     DATA_DIR = '../data/'
     FINAL_DF = create_df(DATA_DIR, ext='txt')
     SUMMARY = summary_yr(FINAL_DF)
+    SUMMARY2 = summary_yr_av(FINAL_DF)
     print(SUMMARY)
+    print(SUMMARY2)
     assert SUMMARY.loc[2009, 'MaxPowerDens'] > 0.0
     assert SUMMARY.loc['All', 'MaxPowerDens'] > 0.0
+    assert SUMMARY2.loc['All', 'IdlePowerPortion'] > 0.0
+    assert SUMMARY2.loc['All', 'IdlePowerPortion'] < 1.0
 
     # pass it to a file
     SUMMARY.to_csv('./summary.csv', sep=';')
+    SUMMARY2.to_csv('./summary2.csv', sep=';')
 
     print('All functions in', os.path.basename(__file__), 'are ok')
