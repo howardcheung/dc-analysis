@@ -20,17 +20,17 @@ import pandas as pd
 
 
 # define methods
-def summary_yr(datadf: pd.DataFrame) -> pd.DataFrame:
+def summary_yr(datadf_ori: pd.DataFrame) -> pd.DataFrame:
     """
         This function summarizes the raw dataframe to create a new frame that
         is grouped based on the year of the data.
 
         Inputs:
-        datadf: pandas.DataFrame
+        datadf_ori: pandas.DataFrame
             pandas DataFrame calculated from create_df.create_df()
     """
 
-    datadf.dropna(inplace=True)  # drop all na values
+    datadf = datadf_ori.dropna()  # drop all na values
 
     # adjust the values
     datadf.loc[:, 'AdjIdlePower'] = datadf.loc[:, 'IdlePower'] /\
