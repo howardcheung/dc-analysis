@@ -212,6 +212,36 @@ def extract_core_num(content: bytes) -> float:
         return float('nan')
 
 
+def extract_int_power(content: bytes, percent: int=90) -> float:
+    """
+        This function extracts the power consumption at a certain cpu
+        utilization rate from the file and returns it as a float object.
+        If it cannot find the power value, it returns a float('nan')
+
+        Inputs:
+        ==========
+        content: bytes
+            byte character obtained by reading a file
+
+        percent: int
+            the cpu utilization rate which the power consumption should be
+            extracted. Should be either 10, 20, 30, 40, 50, 60, 70, 80 or 90.
+            Default 90.
+    """
+
+    # define regular expression to be looked at
+    reg_exp = re.compile(b''.join([str(percent).encode('utf-8'), b'\%.*\|']))
+    # identify where it is
+    try:
+        statement = reg_exp.search(content).group()
+        # remove all redundant characters
+        return float(statement[-10:-2].replace(b',', b''))
+    except AttributeError:
+        return float('nan')
+    except ValueError:
+        return float('nan')
+
+
 # testing functions
 if __name__ == '__main__':
 
@@ -247,5 +277,9 @@ if __name__ == '__main__':
     # extract number of cores
     assert extract_core_num(CONTENT) == 4
     assert extract_core_num(CONTENT2) == 12
+
+    # extract power at intermediate cpu utilization
+    assert extract_int_power(CONTENT2) == 169.0
+    assert extract_int_power(CONTENT, 10) == 75.5
 
     print('All functions in', os.path.basename(__file__), 'are ok')
