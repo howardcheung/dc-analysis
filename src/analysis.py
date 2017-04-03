@@ -26,6 +26,7 @@ def summary_yr(datadf_ori: pd.DataFrame) -> pd.DataFrame:
         is grouped based on the year of the data.
 
         Inputs:
+        ==========
         datadf_ori: pandas.DataFrame
             pandas DataFrame calculated from create_df.create_df()
     """
@@ -47,7 +48,7 @@ def summary_yr(datadf_ori: pd.DataFrame) -> pd.DataFrame:
         grouped['IdlePower'].count(), grouped['CPU speed'].mean(),
         grouped['AdjNumCores'].mean()
     ], axis=1)
-    summary_df.loc['All', :] = [
+    summary_df.loc['Overall', :] = [
         datadf['AdjIdlePower'].mean(), datadf['AdjMaxPower'].mean(),
         datadf['IdlePower'].count(), datadf['CPU speed'].mean(),
         datadf['AdjNumCores'].mean()
@@ -76,6 +77,7 @@ def summary_yr_av(datadf: pd.DataFrame) -> pd.DataFrame:
         form factors.
 
         Inputs:
+        ==========
         datadf: pandas.DataFrame
             pandas DataFrame calculated from create_df.create_df()
     """
@@ -93,12 +95,43 @@ def summary_yr_av(datadf: pd.DataFrame) -> pd.DataFrame:
     summary_df.columns = [
         'Count', 'AvCPUspd', 'IdlePowerPortion', 'IdlePowerPortion.std'
     ]
-    summary_df.loc['All', :] = [
+    summary_df.loc['Overall', :] = [
         summary_df['Count'].sum(), datadf['CPU speed'].mean(),
         datadf['IdlePowerPortion'].mean(), datadf['IdlePowerPortion'].std()
     ]
 
     return summary_df
+
+
+def cal_residual(summary: pd.DataFrame, datadf: pd.DataFrame) -> pd.DataFrame:
+    """
+        Calculate the residual of the estimated relative idle power consumption
+        in the original dataframe based on the estimated value in the new
+        dataframe. Return the original dataframe with the new columns
+        'ResidualRelIdleYear' and 'ResidualRelIdleOverall'.
+
+        Inputs:
+        ==========
+        summary: pandas.DataFrame
+            pandas DataFrame calcalated from analysis.summary_yr_av()
+
+        datadf: pandas.DataFrame
+            pandas DataFrame calculated from create_df.create_df()
+    """
+
+    datadf.loc[:, 'ResidualRelIdleYear'] = float('nan')
+    datadf.loc[:, 'ResidualRelIdleOverall'] = float('nan')
+    for ind in summary.index:
+        if ind != 'Overall':
+            datadf.loc[datadf['Year']==ind, 'ResidualRelIdleYear'] = \
+                datadf.loc[datadf['Year']==ind, 'IdlePowerPortion'] - \
+                summary.loc[ind, 'IdlePowerPortion']
+        else:
+            datadf.loc[:, 'ResidualRelIdleOverall'] = \
+                datadf.loc[:, 'IdlePowerPortion'] - \
+                summary.loc[ind, 'IdlePowerPortion']
+
+    return datadf
 
 # testing functions
 if __name__ == '__main__':
@@ -110,12 +143,14 @@ if __name__ == '__main__':
     FINAL_DF = create_df(DATA_DIR, ext='txt')
     SUMMARY = summary_yr(FINAL_DF)
     SUMMARY2 = summary_yr_av(FINAL_DF)
+    FINAL_DF = cal_residual(SUMMARY2, FINAL_DF)  # calculate the residuals
+    print(FINAL_DF)
     print(SUMMARY)
     print(SUMMARY2)
     assert SUMMARY.loc[2009, 'MaxPowerDens'] > 0.0
-    assert SUMMARY.loc['All', 'MaxPowerDens'] > 0.0
-    assert SUMMARY2.loc['All', 'IdlePowerPortion'] > 0.0
-    assert SUMMARY2.loc['All', 'IdlePowerPortion'] < 1.0
+    assert SUMMARY.loc['Overall', 'MaxPowerDens'] > 0.0
+    assert SUMMARY2.loc['Overall', 'IdlePowerPortion'] > 0.0
+    assert SUMMARY2.loc['Overall', 'IdlePowerPortion'] < 1.0
 
     # pass it to a file
     SUMMARY.to_csv('./summary.csv', sep=';')
