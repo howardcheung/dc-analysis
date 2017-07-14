@@ -53,12 +53,14 @@ def create_df(datadir: str, ext: str='txt') -> pd.DataFrame:
             row_data.append(read_file.extract_min_power(content))
             row_data.append(read_file.extract_cpu_speed(content))
             row_data.append(read_file.extract_core_num(content))
+            for ind in range(10, 100, 10):
+                row_data.append(read_file.extract_int_power(content, ind))
             datalist.append(row_data)
 
     return pd.DataFrame(data=datalist, columns=[
         'Name', 'Year', 'FormFac', 'MaxPower', 'IdlePower', 'CPU speed',
         'NumCores'
-    ])
+    ]+[''.join([str(ind), '%Power']) for ind in range(10, 100, 10)])
 
 # testing functions
 if __name__ == '__main__':
