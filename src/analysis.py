@@ -7,10 +7,16 @@
 """
 
 # import python internal modules
+import ntpath
 import os
+from pathlib import Path
 import pdb
 
 # import python third party modules
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
+from numpy import isfinite
 import pandas as pd
 
 # import user-defined modules
@@ -133,6 +139,79 @@ def cal_residual(summary: pd.DataFrame, datadf: pd.DataFrame) -> pd.DataFrame:
 
     return datadf
 
+
+def residual_boxplot(filename: str, datadf_ori: pd.DataFrame):
+    """
+        This file plots the residual plot of idle power portion estimation
+        as a box plot and saves the plot according to a user-defined
+        path.
+
+        Inputs:
+        ==========
+        filename: string
+            path to the file of the boxplot
+
+        datadf_ori: pandas.DataFrame
+            pandas DataFrame calculated from create_df.create_df() and
+            processed by analysis.cal_residual()
+    """
+
+    # make directory if it is unavailable
+    if not Path(ntpath.split(filename)[0]).exists():
+        mkdir(usrpath)
+
+    # use one plot as an example for now
+    # initialize
+    data = []
+    xtags = []
+    # select data
+    # drop na values
+    datadf = datadf_ori[isfinite(datadf_ori['ResidualRelIdleYear'])]
+    max_value = -1.0
+    min_value = 1.0
+    for time in datadf['Year'].unique():
+        xtags.append(time)
+        data.append(datadf.loc[datadf['Year']==time, 'ResidualRelIdleYear'])
+        max_value = max(max_value, data[-1].max()+0.05)
+        min_value = min(min_value, data[-1].min()-0.05)
+    xtags.append('Overall')
+    data.append(datadf.loc[:, 'ResidualRelIdleOverall'])
+    # create box plot
+    plt.figure(1)
+    ax = plt.subplot(111)
+    plt.boxplot(data, labels=xtags, showfliers=True)
+    # set axis label
+    plt.xlabel('Server Performance Data Publication Year')
+    plt.ylabel('Residuals of Prediction')
+    # set minor grid line
+    # minorLocator = MultipleLocator(
+        # (0.025 if max_value < 2.0 else 100)
+        # if max_value <= 2000.0 else 2.5*10**(
+            # len(str(int(max_value)))-2
+        # )
+    # )
+    # ax.yaxis.set_minor_locator(minorLocator)
+    majorLocator = MultipleLocator(
+        (0.05 if max_value < 2.0 else 200)
+        if max_value <= 2000.0 else 5.0*10**(
+            len(str(int(max_value)))-2
+        )
+    )
+    ax.yaxis.set_major_locator(majorLocator)
+    plt.grid(b=True, which='major', color='k', axis='y')
+    # plt.grid(b=True, which='minor', color='k', axis='y')
+    # rotate x-axis labels
+    locs, labels = plt.xticks()
+    plt.setp(labels, rotation=90)
+    # create more space for x-axis labels
+    plt.subplots_adjust(top=0.95, bottom=0.2)
+    # set minimum for y-axis as zero
+    ax.set_ylim([min_value, max_value])
+    # save plots
+    plt.savefig(filename, dpi=300, frameon=False)
+    plt.clf()
+
+
 # testing functions
 if __name__ == '__main__':
 
@@ -151,6 +230,10 @@ if __name__ == '__main__':
     assert SUMMARY.loc['Overall', 'MaxPowerDens'] > 0.0
     assert SUMMARY2.loc['Overall', 'IdlePowerPortion'] > 0.0
     assert SUMMARY2.loc['Overall', 'IdlePowerPortion'] < 1.0
+
+    # make a plot
+    residual_boxplot('./residual_plot.png', FINAL_DF)
+    assert os.path.isfile('./residual_plot.png')
 
     # pass it to a file
     SUMMARY.to_csv('./summary.csv', sep=';')
