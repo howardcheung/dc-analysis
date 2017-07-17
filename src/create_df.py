@@ -74,9 +74,9 @@ if __name__ == '__main__':
     ])
     FINAL_DF = create_df('../data/', ext='txt')
     print(FINAL_DF)
-    assert FINAL_DF.shape == (NUM_FILES, 7)
+    assert FINAL_DF.shape[0] == NUM_FILES
     assert set(FINAL_DF['Year']) == {
-        2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016
+        2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017
     }
 
     print('All functions in', os.path.basename(__file__), 'are ok')
